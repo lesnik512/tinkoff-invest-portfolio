@@ -124,6 +124,8 @@ sqlalchemy==1.4.0b2
     #   alembic
 starlette==0.13.6
     # via fastapi
+tabulate==0.8.9
+    # via -r requirements.in
 tinvest==3.0.2
     # via -r requirements.in
 toml==0.10.2

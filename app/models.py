@@ -1,8 +1,5 @@
-from typing import Sequence
-
 import sqlalchemy as sa
-from sqlalchemy.ext.asyncio import AsyncSession
-from tinvest import Operation as OperationSchema, InstrumentType, OperationTypeWithCommission, OperationStatus, Currency
+from tinvest import InstrumentType, OperationTypeWithCommission, OperationStatus, Currency
 
 from app.db import Base
 
@@ -23,18 +20,10 @@ class Operation(Base):
     operation_type = sa.Column(sa.Enum(OperationTypeWithCommission), nullable=False)
     broker_account_id = sa.Column(sa.String, nullable=False)
 
-    @classmethod
-    async def bulk_create_for_account(
-        cls, db: AsyncSession, data: Sequence[OperationSchema], broker_account_id: str
-    ) -> None:
-        await cls._bulk_insert(
-            db,
-            [
-                dict(
-                    **x.dict(exclude={"trades", "commission"}),
-                    broker_account_id=broker_account_id,
-                    commission=getattr(x.commission, "value", 0),
-                )
-                for x in data
-            ]
-        )
+
+class MarketInstrument(Base):
+    figi = sa.Column(sa.String, primary_key=True, index=True, autoincrement=False)
+    currency = sa.Column(sa.Enum(Currency), nullable=False)
+    name = sa.Column(sa.String, nullable=False)
+    ticker = sa.Column(sa.String, nullable=False)
+    type = sa.Column(sa.Enum(InstrumentType), nullable=False)

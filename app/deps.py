@@ -1,9 +1,10 @@
-from contextlib import asynccontextmanager
+from contextlib import contextmanager
 
 from sqlalchemy.exc import PendingRollbackError
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 
-from app.db import engine
+from app.db import engine, sync_engine
 
 
 async def get_db():
@@ -21,17 +22,17 @@ async def get_db():
         await session.close()
 
 
-@asynccontextmanager
-async def get_db_typer():
-    session = AsyncSession(engine)
+@contextmanager
+def get_db_typer():
+    session = Session(sync_engine)
     try:
-        async with session.begin_nested():
+        with session.begin_nested():
             yield session
     except PendingRollbackError:
         pass
     finally:
         try:
-            await session.commit()
+            session.commit()
         except PendingRollbackError:
             pass
-        await session.close()
+        session.close()
